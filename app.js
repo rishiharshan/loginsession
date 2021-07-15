@@ -40,6 +40,9 @@ passport.deserializeUser(User.deserializeUser());
 //Parsing body
 app.use(express.json());
 //Managing GET and POST requests
+app.get('/',(req,res)=>{
+  res.render('homepage');
+})
 app.get("/register", (req, res)=>{
     res.render("registerpage");
   });
