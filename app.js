@@ -4,14 +4,14 @@ const mongoose = require('mongoose');
 const session= require('express-session');
 const passport= require('passport');
 
+//Setting up passport,express-session,mongoose connection
 const passportLocalMongoose= require('passport-local-mongoose');
 
 const app= express();
+//connecting MongoDB
 mongoose.connect(process.env.MONGO_URL,{ useNewUrlParser: true },()=>{
     console.log('database connected');
 })
-
-
 
 
 app.set('view engine', 'ejs');
@@ -43,11 +43,12 @@ app.use(express.json());
 app.get('/',(req,res)=>{
   res.render('homepage');
 })
+
 app.get("/register", (req, res)=>{
     res.render("registerpage");
-  });
+});
+//Registering New user
 app.post("/register", (req, res)=>{
-
     User.register({username: req.body.username}, req.body.password, (err, user)=>{
       if (err) {
         console.log(err);
@@ -57,14 +58,15 @@ app.post("/register", (req, res)=>{
           res.redirect("/protectedpage");
         });
       }
-    });
-  
   });
+  
+});
 
 
 app.get("/login", (req, res)=>{
     res.render("loginpage");
  }); 
+ //Logining in user
  app.post('/login', function(req, res, next) {
   const user = new User({
     username: req.body.username,
@@ -75,9 +77,8 @@ app.get("/login", (req, res)=>{
   }
   passport.authenticate('local', function(err, user, info) {
     if (err) {
-      return next(err); // will generate a 500 error
+      return next(err); 
     }
-    // Generate a JSON response reflecting authentication status
     if (! user) {
       res.render('loginpage',{errorMessage:'Invalid username or passowrd'});
     }
@@ -90,7 +91,7 @@ app.get("/login", (req, res)=>{
   })(req, res, next);
 });
 
-
+//Protected route ,if user tries to access this route without logging in,he will be redirected to login
 app.get("/protectedpage",(req,res)=>{
     if(req.isAuthenticated()){
       res.render('protectedpage');
@@ -110,5 +111,5 @@ app.get("/logout",(req,res)=>{
   }
 })
 
-
+//Listening on Port
 app.listen(process.env.PORT || 5000);
