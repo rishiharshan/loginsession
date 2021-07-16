@@ -63,33 +63,50 @@ app.post("/register", (req, res)=>{
 });
 
 
-app.get("/login", (req, res)=>{
-    res.render("loginpage");
- }); 
+ app.get("/login", (req, res)=>{
+    res.render("loginpage",{message: req.flash('error')});
+    }); 
  //Logining in user
- app.post('/login', function(req, res, next) {
+ app.post("/login", function(req, res){
+
   const user = new User({
     username: req.body.username,
     password: req.body.password
   });
   if(!req.body.username || !req.body.password){
-    res.render('loginpage',{errorMessage:'Enter both username and password'});
+        res.render('loginpage',{errorMessage:'Enter both username and password'});
   }
-  passport.authenticate('local', function(err, user, info) {
+  req.login(user, function(err){
     if (err) {
-      return next(err); 
+      console.log(err);
+    } else {
+      passport.authenticate("local",{ successRedirect: '/protectedpage',
+         failureRedirect: '/loginerr',})(req, res, function(){
+        res.redirect("/protectedpage");
+      });
     }
-    if (! user) {
-      res.render('loginpage',{errorMessage:'Invalid username or passowrd'});
-    }
-    req.login(user, loginErr => {
-      if (loginErr) {
-        next(loginErr);
-      }
-      res.redirect('protectedpage');
-    });      
-  })(req, res, next);
+  });
+
 });
+
+
+//When no match is found in the database
+app.get("/loginerr",(req,res)=>{
+  res.render('loginerr');
+})
+
+//Logging out the user
+app.get("/logout",(req,res)=>{
+  if(req.isAuthenticated()){
+    req.logout();
+    res.redirect('login');
+  }
+  else{
+    res.redirect('login');
+  }
+})
+
+
 
 //Protected route ,if user tries to access this route without logging in,he will be redirected to login
 app.get("/protectedpage",(req,res)=>{
@@ -101,15 +118,6 @@ app.get("/protectedpage",(req,res)=>{
     }
 })
 
-app.get("/logout",(req,res)=>{
-  if(req.isAuthenticated()){
-    req.logout();
-    res.redirect('login');
-  }
-  else{
-    res.redirect('login');
-  }
-})
 
 //Listening on Port
 app.listen(process.env.PORT || 5000);
