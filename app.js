@@ -64,7 +64,7 @@ app.post("/register", (req, res)=>{
 
 
  app.get("/login", (req, res)=>{
-    res.render("loginpage",{message: req.flash('error')});
+    res.render("loginpage");
     }); 
  //Logining in user
  app.post("/login", function(req, res){
